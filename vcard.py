@@ -93,46 +93,46 @@ def categories_from_vcard(card_text):
     return set(cats)
 
 def read_vcards(files: List[str]) -> List[str]:
-	"""Read vCard blocks from files (BEGIN:VCARD ... END:VCARD)."""
-	cards = []
-	buf = []
-	for path in files:
-		with open(path, "r", encoding="utf-8") as fh:
-			for raw in fh:
-				line = raw.rstrip("\n")
-				if line.upper().startswith("BEGIN:VCARD"):
-					buf = [line]
-				elif line.upper().startswith("END:VCARD"):
-					buf.append(line)
-					cards.append("\n".join(buf))
-					buf = []
-				else:
-					if buf:
-						buf.append(line)
-	# In case a file ends without END:VCARD, ignore incomplete block.
-	return cards
+    """Read vCard blocks from files (BEGIN:VCARD ... END:VCARD)."""
+    cards = []
+    buf = []
+    for path in files:
+        with open(path, "r", encoding="utf-8") as fh:
+            for raw in fh:
+                line = raw.rstrip("\n")
+                if line.upper().startswith("BEGIN:VCARD"):
+                    buf = [line]
+                elif line.upper().startswith("END:VCARD"):
+                    buf.append(line)
+                    cards.append("\n".join(buf))
+                    buf = []
+                else:
+                    if buf:
+                        buf.append(line)
+    # In case a file ends without END:VCARD, ignore incomplete block.
+    return cards
 
 def get_categories(card: str) -> List[str]:
-	"""Extract categories from a vCard block. Matches CATEGORIES: or CATEGORY: (case-insensitive)."""
-	for line in card.splitlines():
-		m = re.match(r'(?i)^(?:CATEGORIES|CATEGORY):\s*(.+)$', line)
-		if m:
-			parts = m.group(1).strip()
-			items = [p.strip() for p in re.split(r'[;,]', parts) if p.strip()]
-			return items
-	return []
+    """Extract categories from a vCard block. Matches CATEGORIES: or CATEGORY: (case-insensitive)."""
+    for line in card.splitlines():
+        m = re.match(r'(?i)^(?:CATEGORIES|CATEGORY):\s*(.+)$', line)
+        if m:
+            parts = m.group(1).strip()
+            items = [p.strip() for p in re.split(r'[;,]', parts) if p.strip()]
+            return items
+    return []
 
 def categorydiff(cat_a: str, cat_b: str, files: List[str]) -> List[str]:
-	"""Return vCard blocks that have cat_a but not cat_b."""
-	cards = read_vcards(files)
-	out = []
-	la = cat_a.lower()
-	lb = cat_b.lower()
-	for card in cards:
-		cats = [c.lower() for c in get_categories(card)]
-		if la in cats and lb not in cats:
-			out.append(card)
-	return out
+    """Return vCard blocks that have cat_a but not cat_b."""
+    cards = read_vcards(files)
+    out = []
+    la = cat_a.lower()
+    lb = cat_b.lower()
+    for card in cards:
+        cats = [c.lower() for c in get_categories(card)]
+        if la in cats and lb not in cats:
+            out.append(card)
+    return out
 
 # New: parse CLI args and return structured values
 def parse_args(argv):
@@ -215,8 +215,8 @@ def write_matches(matches, out_path):
         sys.stdout.write(out_text)
 
 def print_usage():
-	print("Usage:")
-	print("  python vcard.py categorydiff CategoryA CategoryB file1.vcf [file2.vcf ...] [--out out.vcf]")
+    print("Usage:")
+    print("  python vcard.py categorydiff CategoryA CategoryB file1.vcf [file2.vcf ...] [--out out.vcf]")
 
 def main():
     """Main entrypoint that coordinates argument parsing, matching and output.
@@ -225,37 +225,37 @@ def main():
     the high-level flow.
     """
     if len(sys.argv) < 2:
-		print_usage()
-		sys.exit(1)
+        print_usage()
+        sys.exit(1)
 
-	func = sys.argv[1].lower()
-	args = sys.argv[2:]
+    func = sys.argv[1].lower()
+    args = sys.argv[2:]
 
-	# Optional --out output file (can appear anywhere in args)
-	out_path = None
-	if "--out" in args:
-		i = args.index("--out")
-		if i + 1 >= len(args):
-			print("Error: --out requires a filename")
-			sys.exit(2)
-		out_path = args[i + 1]
-		# remove the option and its value
-		del args[i:i+2]
+    # Optional --out output file (can appear anywhere in args)
+    out_path = None
+    if "--out" in args:
+        i = args.index("--out")
+        if i + 1 >= len(args):
+            print("Error: --out requires a filename")
+            sys.exit(2)
+        out_path = args[i + 1]
+        # remove the option and its value
+        del args[i:i+2]
 
     if func == "categorydiff":
-		if len(args) < 3:
-			print_usage()
-			sys.exit(1)
-		category_a = args[0]
-		category_b = args[1]
-		input_files = args[2:]
-		result_cards = categorydiff(category_a, category_b, input_files)
-		output = ("\n".join(result_cards) + ("\n" if result_cards else ""))
-		if out_path:
-			with open(out_path, "w", encoding="utf-8") as fh:
-				fh.write(output)
-		else:
-			sys.stdout.write(output)
+        if len(args) < 3:
+            print_usage()
+            sys.exit(1)
+        category_a = args[0]
+        category_b = args[1]
+        input_files = args[2:]
+        result_cards = categorydiff(category_a, category_b, input_files)
+        output = ("\n".join(result_cards) + ("\n" if result_cards else ""))
+        if out_path:
+            with open(out_path, "w", encoding="utf-8") as fh:
+                fh.write(output)
+        else:
+            sys.stdout.write(output)
     else:
         cat_a, cat_b, files, out_path = parse_args(sys.argv[1:])
         matches, total_vcards, matched_count = find_matching_vcards(cat_a, cat_b, files)
