@@ -20,4 +20,6 @@ python vcard.py CategoryA CategoryB file1.vcf [file2.vcf ...] [--out out.vcf]
 
 # Run tests
 
+```bash
 pytest -q
+```
