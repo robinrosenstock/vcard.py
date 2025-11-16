@@ -18,6 +18,18 @@ pip install -r requirements.txt
 python vcard.py categorydiff CategoryA CategoryB file1.vcf [file2.vcf ...] [--out out.vcf]
 ```
 
+## Category counts
+
+```bash
+# Print category occurrence counts (to stdout by default).
+python vcard.py categorycounts file1.vcf [file2.vcf ...]
+
+# Or write counts to a file:
+python vcard.py categorycounts file1.vcf [file2.vcf ...] --out counts.txt
+```
+
+Note: If no files are provided, the command will print a brief usage hint describing how to supply vCard files.
+
 # Run tests
 
 ```bash
