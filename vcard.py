@@ -24,6 +24,8 @@ Notes:
 - Folded lines (a newline followed by space or tab) are unfolded before parsing.
 """
 
+CATEGORY_COUNTS = {}  # module-level store for last computed category counts
+
 def unfold(text):
     """Unfold folded vCard lines.
 
@@ -123,15 +125,22 @@ def get_categories(card: str) -> List[str]:
     return []
 
 def categorydiff(cat_a: str, cat_b: str, files: List[str]) -> List[str]:
-    """Return vCard blocks that have cat_a but not cat_b."""
+    """Return vCard blocks that have cat_a but not cat_b and record category counts."""
     cards = read_vcards(files)
     out = []
+    counts = {}
     la = cat_a.lower()
     lb = cat_b.lower()
     for card in cards:
         cats = [c.lower() for c in get_categories(card)]
+        # tally categories seen in this card stream
+        for c in cats:
+            counts[c] = counts.get(c, 0) + 1
         if la in cats and lb not in cats:
             out.append(card)
+    # store counts for later inspection/printing
+    global CATEGORY_COUNTS
+    CATEGORY_COUNTS = counts
     return out
 
 # New: parse CLI args and return structured values
@@ -237,19 +246,17 @@ def main():
         input_files = args[2:]
         result_cards = categorydiff(category_a, category_b, input_files)
         output = ("\n".join(result_cards) + ("\n" if result_cards else ""))
-        
-        # matches, total_vcards, matched_count = find_matching_vcards(category_a, category_b, input_files)
-
-        # # Summary printed to stderr so stdout remains the vcard stream
-        # print(f"Processed vcards: {total_vcards}", file=sys.stderr)
-        # print(f"vcards with '{category_a}': {matched_count}", file=sys.stderr)
-        # print(f"Matches (has '{category_a}', lacks '{category_b}'): {matched_count}", file=sys.stderr)
-
         if out_path:
             with open(out_path, "w", encoding="utf-8") as fh:
                 fh.write(output)
         else:
             sys.stdout.write(output)
+
+        # Print category counts to stderr (keeps stdout as vCard stream)
+        if CATEGORY_COUNTS:
+            print("Category counts:", file=sys.stderr)
+            for k in sorted(CATEGORY_COUNTS):
+                print(f"  {k}: {CATEGORY_COUNTS[k]}", file=sys.stderr)
     else:
         print_usage()
         sys.exit(1)
