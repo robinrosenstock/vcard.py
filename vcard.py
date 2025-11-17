@@ -367,6 +367,12 @@ def build_parser():
     p_contacts.add_argument("files", nargs="+", help="One or more .vcf files")
     p_contacts.add_argument("--out", "-o", dest="out", help="Write matches to file (default stdout)")
 
+    # Add: categorycontacts_all subcommand (logical AND)
+    p_contacts_all = subparsers.add_parser("categorycontacts_all", help="Output vCards that have all specified categories")
+    p_contacts_all.add_argument("category", nargs="+", help="One or more category names (comma/semicolon allowed in a single argument)")
+    p_contacts_all.add_argument("files", nargs="+", help="One or more .vcf files")
+    p_contacts_all.add_argument("--out", "-o", dest="out", help="Write matches to file (default stdout)")
+
     # categorycounts subcommand
     p_counts = subparsers.add_parser("categorycounts", help="Compute/print category occurrence counts")
     p_counts.add_argument("files", nargs="*", help="Optional .vcf files to compute counts from")
@@ -396,8 +402,17 @@ def main(argv=None):
             sys.stdout.write(output)
 
     elif args.command == "categorycontacts":
-        # produce vCards that include the requested category
+        # produce vCards that include the requested category (logical OR)
         matches = categorycontacts(args.category, args.files)
+        output = ("\n".join(matches) + ("\n" if matches else ""))
+        if args.out:
+            Path(args.out).write_text(output, encoding="utf-8")
+        else:
+            sys.stdout.write(output)
+
+    elif args.command == "categorycontacts_all":
+        # produce vCards that include all requested categories (logical AND)
+        matches = categorycontacts_all(args.category, args.files)
         output = ("\n".join(matches) + ("\n" if matches else ""))
         if args.out:
             Path(args.out).write_text(output, encoding="utf-8")
