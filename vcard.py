@@ -12,47 +12,45 @@ Utilities for vCard (.vcf) processing.
 """
 
 __version__ = "0.1.0"
-CATEGORY_COUNTS = {}  # module-level store for last computed category counts
+categorycounts = {}  # module-level store for last computed category counts
 
-def categorycounts(output=None):
-    """Output the stored category counts and return them.
+def categorycounts(files: List[str] = None, output=None):
+    """Compute (if files provided) and/or print stored category counts; return dict copy.
 
-    Args:
-        output: a file-like object to write the human-readable counts to.
-                If None, defaults to sys.stderr.
-
-    Returns:
-        dict: A shallow copy of the CATEGORY_COUNTS dictionary.
+    - If files is provided, compute counts from those files and store in categorycounts.
+    - Print the stored counts to `output` (defaults to sys.stderr).
+    - Always return a shallow copy of the stored counts.
     """
+    global categorycounts
+
+    # Compute counts if files given
+    if files:
+        counts = {}
+        for p in files:
+            p = Path(p)
+            if not p.exists():
+                logging.warning("%s not found, skipping", p)
+                continue
+            text = read_file_as_utf8(p)
+            for vcard in iter_vcards(text):
+                cats = [c.lower() for c in get_categories(vcard)]
+                for c in cats:
+                    counts[c] = counts.get(c, 0) + 1
+        categorycounts = counts
+
+    # Default output
     if output is None:
         output = sys.stderr
-    if not CATEGORY_COUNTS:
+
+    # Print stored counts
+    if not categorycounts:
         print("No category counts available", file=output)
     else:
         print("Category counts:", file=output)
-        for k in sorted(CATEGORY_COUNTS):
-            print(f"  {k}: {CATEGORY_COUNTS[k]}", file=output)
-    return dict(CATEGORY_COUNTS)
+        for k in sorted(categorycounts):
+            print(f"  {k}: {categorycounts[k]}", file=output)
 
-def compute_category_counts(files: List[str]):
-    """Compute category counts from the provided vCard files and store them.
-    Returns a dict copy of the computed counts.
-    """
-    counts = {}
-    for p in files:
-        p = Path(p)
-        if not p.exists():
-            logging.warning("%s not found, skipping", p)
-            continue
-        # read using robust utf-8 conversion helper
-        text = read_file_as_utf8(p)
-        for vcard in iter_vcards(text):
-            cats = [c.lower() for c in get_categories(vcard)]
-            for c in cats:
-                counts[c] = counts.get(c, 0) + 1
-    global CATEGORY_COUNTS
-    CATEGORY_COUNTS = counts
-    return dict(counts)
+    return dict(categorycounts)
 
 def unfold(text):
     """Unfold folded vCard lines.
@@ -235,11 +233,11 @@ def categorydiff(cat_a: str, cat_b: str, files: List[str]) -> List[str]:
         if cat_a in cats and cat_b not in cats:
             out.append(card)
     # store counts for later inspection/printing
-    global CATEGORY_COUNTS
+    global categorycounts
     # print(counts_total)
     print(count_of_cat_a)
     print(count_of_cat_b)
-    CATEGORY_COUNTS = counts_total
+    categorycounts = counts_total
     return out
 
 # New: parse CLI args and return structured values
@@ -372,10 +370,10 @@ def main(argv=None):
     elif args.command == "categorycounts":
         # If files provided, compute counts
         if args.files:
-            compute_category_counts(args.files)
+            categorycounts(args.files)
 
         # If still no counts, print help hint to stderr
-        if not CATEGORY_COUNTS:
+        if not categorycounts:
             logging.info("No category counts available. Provide vCard files to compute counts.")
             parser.exit(0)
 
@@ -383,8 +381,6 @@ def main(argv=None):
         if args.out:
             with open(args.out, "w", encoding="utf-8") as fh:
                 categorycounts(output=fh)
-        else:
-            categorycounts(output=sys.stdout)
 
 if __name__ == "__main__":
     main()
