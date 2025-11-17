@@ -164,9 +164,6 @@ def categorycontacts(categories=None, files: List[str] = None, must_have=None, e
     required = set(_normalize_categories(must_have))
     exclude = set(_normalize_categories(exclude))
 
-    if not include and not required:
-        return []
-
     if files is None:
         files = []
 
