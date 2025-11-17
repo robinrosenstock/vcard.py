@@ -3,18 +3,28 @@ import sys
 import logging
 from pathlib import Path
 
-# Use the centralized argparsing module
-from argparsing import build_parser, parse_args
-
-# Import utilities
-from functions import (
-    categorycounts,
-    categorycontacts,
-    categorycontacts_all,
-    categorydiff,
-    get_name,
-    get_numbers,
-)
+# Try package-style imports first (when installed or run as package),
+# fall back to local imports when running from repo root as script.
+try:
+    from vcard.argparsing import build_parser
+    from vcard.functions import (
+        categorycounts,
+        categorycontacts,
+        categorycontacts_all,
+        categorydiff,
+        get_name,
+        get_numbers,
+    )
+except Exception:
+    from argparsing import build_parser
+    from functions import (
+        categorycounts,
+        categorycontacts,
+        categorycontacts_all,
+        categorydiff,
+        get_name,
+        get_numbers,
+    )
 
 __version__ = "0.1.0"
 
