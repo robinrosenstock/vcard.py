@@ -35,6 +35,8 @@ def build_parser():
     p_diff.add_argument("category_b")
     p_diff.add_argument("files", nargs="+", help="One or more .vcf files")
     p_diff.add_argument("--out", "-o", dest="out", help="Write matches to file (default stdout)")
+    p_diff.add_argument("--name", action="store_true", dest="name", help="Output only the contact name(s) instead of full vCard")
+    p_diff.add_argument("--number", action="store_true", dest="number", help="Output only telephone number(s) instead of full vCard")
 
     p_contacts = subparsers.add_parser("categorycontacts", help="Output vCards that match the specified category(ies)")
     p_contacts.add_argument("category", nargs="+", help="One or more category names (comma/semicolon allowed in a single argument)")

@@ -27,8 +27,20 @@ def main(argv=None):
         category_a = args.category_a
         category_b = args.category_b
         input_files = args.files
-        result_cards = categorydiff(category_a, category_b, input_files)
-        output = ("\n".join(result_cards) + ("\n" if result_cards else ""))
+        matches = categorydiff(category_a, category_b, input_files)
+        if args.name or args.number:
+            lines = []
+            for card in matches:
+                cols = []
+                if args.name:
+                    cols.append(get_name(card))
+                if args.number:
+                    nums = get_numbers(card)
+                    cols.append(";".join(nums) if nums else "")
+                lines.append("\t".join(cols))
+            output = ("\n".join(lines) + ("\n" if lines else ""))
+        else:
+            output = ("\n".join(matches) + ("\n" if matches else ""))
         if args.out:
             Path(args.out).write_text(output, encoding="utf-8")
         else:
