@@ -3,30 +3,19 @@ import sys
 import logging
 from pathlib import Path
 
-# Try package-style imports first (when installed or run as package),
-# fall back to local imports when running from repo root as script.
-try:
-    from vcard.argparsing import build_parser
-    from vcard.utils import (
-        categorycounts,
-        categorycontacts,
-        categorycontacts_all,
-        categorydiff,
-        get_name,
-        get_numbers,
-    )
-except Exception:
-    from argparsing import build_parser
-    from utils import (
-        categorycounts,
-        categorycontacts,
-        categorycontacts_all,
-        categorydiff,
-        get_name,
-        get_numbers,
-    )
+# direct imports of top-level modules (installed as py_modules or present locally)
+from argparsing import build_parser
+from utils import (
+    categorycounts,
+    categorycontacts,
+    categorycontacts_all,
+    categorydiff,
+    get_name,
+    get_numbers,
+)
 
 __version__ = "0.1.0"
+
 
 def main(argv=None):
     """Main entrypoint: parse args (via build_parser) and dispatch commands."""
@@ -99,6 +88,7 @@ def main(argv=None):
         if args.out:
             with open(args.out, "w", encoding="utf-8") as fh:
                 categorycounts(output=fh)
+
 
 if __name__ == "__main__":
     main()

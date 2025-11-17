@@ -11,9 +11,9 @@ requires-python = ">=3.8"
 authors = [{name = "Your Name"}]
 license = {text = "MIT"}
 
-# Install the single top-level module `vcard.py` as a py-module.
+# Install the single top-level modules `vcard.py`, `argparsing.py`, `utils.py`
 [tool.setuptools]
-py-modules = ["vcard"]
+py-modules = ["vcard", "argparsing", "utils"]
 
 [project.scripts]
 # console script imports the top-level module `vcard` and calls `main`
