@@ -36,6 +36,7 @@ def build_parser():
     p_contacts.add_argument("--not", dest="exclude", action="append", default=[], help="Exclude contacts containing these category names (comma/semicolon allowed per value)")
     p_contacts.add_argument("--name", action="store_true", dest="name", help="Output only the contact name(s) instead of full vCard")
     p_contacts.add_argument("--number", action="store_true", dest="number", help="Output only telephone number(s) instead of full vCard")
+    p_contacts.add_argument("--searchname", action="append", dest="searchname", default=[], help="Filter contacts whose name contains these fragments (repeat or comma-separate)")
     p_contacts.add_argument("--out", "-o", dest="out", help="Write matches to file (default stdout)")
 
     p_counts = subparsers.add_parser("count-categories", help="Compute/print category occurrence counts")

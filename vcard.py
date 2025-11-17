@@ -29,6 +29,21 @@ def main(argv=None):
             must_have=args.must_have,
             exclude=args.exclude,
         )
+        # apply optional name filtering
+        search_terms = [
+            term.strip().lower()
+            for raw in (args.searchname or [])
+            for term in raw.split(",")
+            if term.strip()
+        ]
+        if search_terms:
+            filtered = []
+            for card in matches:
+                contact_name = get_name(card)
+                if contact_name and any(term in contact_name.lower() for term in search_terms):
+                    filtered.append(card)
+            matches = filtered
+
         if args.name or args.number:
             lines = []
             for card in matches:
