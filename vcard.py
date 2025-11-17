@@ -22,7 +22,7 @@ def main(argv=None):
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    if args.command == "categorycontacts":
+    if args.command == "get-contacts":
         matches = categorycontacts(args.category, args.files, require_all=args.require_all, exclude=args.exclude)
         if args.name or args.number:
             lines = []
@@ -43,7 +43,7 @@ def main(argv=None):
         else:
             sys.stdout.write(output)
 
-    elif args.command == "count_categories":
+    elif args.command == "count-categories":
         counts = count_categories(args.files if args.files else None)
         if not counts:
             logging.info("No category counts available. Provide vCard files to compute counts.")

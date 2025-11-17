@@ -30,7 +30,7 @@ def build_parser():
     parser.add_argument("--version", action="version", version=__version__)
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    p_contacts = subparsers.add_parser("categorycontacts", help="Output vCards that match the specified category(ies)")
+    p_contacts = subparsers.add_parser("get-contacts", help="Output vCards that match the specified category(ies)")
     p_contacts.add_argument("category", nargs="+", help="One or more category names (comma/semicolon allowed in a single argument)")
     p_contacts.add_argument("files", nargs="+", help="One or more .vcf files")
     p_contacts.add_argument("--all", action="store_true", dest="require_all", help="Require all categories (default: any category matches)")
@@ -39,7 +39,7 @@ def build_parser():
     p_contacts.add_argument("--number", action="store_true", dest="number", help="Output only telephone number(s) instead of full vCard")
     p_contacts.add_argument("--out", "-o", dest="out", help="Write matches to file (default stdout)")
 
-    p_counts = subparsers.add_parser("count_categories", help="Compute/print category occurrence counts")
+    p_counts = subparsers.add_parser("count-categories", help="Compute/print category occurrence counts")
     p_counts.add_argument("files", nargs="*", help="Optional .vcf files to compute counts from")
     p_counts.add_argument("--out", "-o", dest="out", help="Write counts to file (default stdout)")
 
