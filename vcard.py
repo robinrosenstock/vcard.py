@@ -162,6 +162,50 @@ def get_categories(card: str) -> List[str]:
             return items
     return []
 
+def get_name(card: str) -> str:
+    """Extract a display name from a vCard block.
+
+    Preference order:
+      1. FN: property (full name)
+      2. N: property (family;given;additional;prefix;suffix) -> "Given Family"
+
+    Returns an empty string if no name property is present.
+    """
+    # Prefer FN
+    for line in card.splitlines():
+        m = re.match(r'(?i)^FN:\s*(.+)$', line)
+        if m:
+            return m.group(1).strip()
+
+    # Fallback to N - format as "Given Family"
+    for line in card.splitlines():
+        m = re.match(r'(?i)^N:\s*(.+)$', line)
+        if m:
+            parts = [p.strip() for p in m.group(1).split(';')]
+            family = parts[0] if len(parts) > 0 else ""
+            given = parts[1] if len(parts) > 1 else ""
+            name = " ".join(p for p in (given, family) if p)
+            return name
+
+    return ""
+
+def get_numbers(card: str) -> List[str]:
+    """Extract telephone numbers (TEL properties) from a vCard block.
+
+    Returns a list of raw TEL values (no decoding of parameters). Case-insensitive
+    match for 'TEL' property. Handles lines like:
+      TEL:+123456789
+      TEL;TYPE=CELL:+123456789
+    """
+    nums = []
+    for line in card.splitlines():
+        m = re.match(r'(?i)^TEL(?:;[^:]*)?:\s*(.+)$', line)
+        if m:
+            val = m.group(1).strip()
+            if val:
+                nums.append(val)
+    return nums
+
 def categorycontacts(categories, files: List[str]) -> List[str]:
     """Return vCard blocks that have any of the specified categories (case-insensitive).
 
@@ -217,33 +261,6 @@ def categorycontacts_all(categories, files: List[str]) -> List[str]:
         if all(cat in card_cats for cat in cats):
             results.append(card)
     return results
-
-def get_name(card: str) -> str:
-    """Extract a display name from a vCard block.
-
-    Preference order:
-      1. FN: property (full name)
-      2. N: property (family;given;additional;prefix;suffix) -> "Given Family"
-
-    Returns an empty string if no name property is present.
-    """
-    # Prefer FN
-    for line in card.splitlines():
-        m = re.match(r'(?i)^FN:\s*(.+)$', line)
-        if m:
-            return m.group(1).strip()
-
-    # Fallback to N - format as "Given Family"
-    for line in card.splitlines():
-        m = re.match(r'(?i)^N:\s*(.+)$', line)
-        if m:
-            parts = [p.strip() for p in m.group(1).split(';')]
-            family = parts[0] if len(parts) > 0 else ""
-            given = parts[1] if len(parts) > 1 else ""
-            name = " ".join(p for p in (given, family) if p)
-            return name
-
-    return ""
 
 def categorydiff(cat_a: str, cat_b: str, files: List[str]) -> List[str]:
     """Return vCard blocks that have cat_a but not cat_b and record category counts."""
@@ -365,12 +382,18 @@ def build_parser():
     p_contacts = subparsers.add_parser("categorycontacts", help="Output vCards that have the specified category(ies)")
     p_contacts.add_argument("category", nargs="+", help="One or more category names (comma/semicolon allowed in a single argument)")
     p_contacts.add_argument("files", nargs="+", help="One or more .vcf files")
+    # New flags to control output fields
+    p_contacts.add_argument("--name", action="store_true", dest="name", help="Output only the contact name(s) instead of full vCard")
+    p_contacts.add_argument("--number", action="store_true", dest="number", help="Output only telephone number(s) instead of full vCard")
     p_contacts.add_argument("--out", "-o", dest="out", help="Write matches to file (default stdout)")
 
     # Add: categorycontacts_all subcommand (logical AND)
     p_contacts_all = subparsers.add_parser("categorycontacts_all", help="Output vCards that have all specified categories")
     p_contacts_all.add_argument("category", nargs="+", help="One or more category names (comma/semicolon allowed in a single argument)")
     p_contacts_all.add_argument("files", nargs="+", help="One or more .vcf files")
+    # New flags for this subcommand as well
+    p_contacts_all.add_argument("--name", action="store_true", dest="name", help="Output only the contact name(s) instead of full vCard")
+    p_contacts_all.add_argument("--number", action="store_true", dest="number", help="Output only telephone number(s) instead of full vCard")
     p_contacts_all.add_argument("--out", "-o", dest="out", help="Write matches to file (default stdout)")
 
     # categorycounts subcommand
@@ -404,7 +427,22 @@ def main(argv=None):
     elif args.command == "categorycontacts":
         # produce vCards that include the requested category (logical OR)
         matches = categorycontacts(args.category, args.files)
-        output = ("\n".join(matches) + ("\n" if matches else ""))
+        # If user requested only name and/or number, format accordingly
+        if args.name or args.number:
+            lines = []
+            for card in matches:
+                cols = []
+                if args.name:
+                    cols.append(get_name(card))
+                if args.number:
+                    nums = get_numbers(card)
+                    cols.append(";".join(nums) if nums else "")
+                # join requested fields with a tab (name<TAB>numbers)
+                lines.append("\t".join(cols))
+            output = ("\n".join(lines) + ("\n" if lines else ""))
+        else:
+            output = ("\n".join(matches) + ("\n" if matches else ""))
+
         if args.out:
             Path(args.out).write_text(output, encoding="utf-8")
         else:
@@ -413,7 +451,21 @@ def main(argv=None):
     elif args.command == "categorycontacts_all":
         # produce vCards that include all requested categories (logical AND)
         matches = categorycontacts_all(args.category, args.files)
-        output = ("\n".join(matches) + ("\n" if matches else ""))
+        # If user requested only name and/or number, format accordingly
+        if args.name or args.number:
+            lines = []
+            for card in matches:
+                cols = []
+                if args.name:
+                    cols.append(get_name(card))
+                if args.number:
+                    nums = get_numbers(card)
+                    cols.append(";".join(nums) if nums else "")
+                lines.append("\t".join(cols))
+            output = ("\n".join(lines) + ("\n" if lines else ""))
+        else:
+            output = ("\n".join(matches) + ("\n" if matches else ""))
+
         if args.out:
             Path(args.out).write_text(output, encoding="utf-8")
         else:
