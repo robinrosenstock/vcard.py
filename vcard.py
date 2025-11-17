@@ -10,6 +10,7 @@ from utils import (
     categorycontacts,
     get_name,
     get_numbers,
+    get_categories,
 )
 
 def main(argv=None):
@@ -44,23 +45,35 @@ def main(argv=None):
                     filtered.append(card)
             matches = filtered
 
-        if args.name or args.number:
+        if args.name or args.number or args.show_categories:
             rows = []
             for card in matches:
-                name_val = get_name(card) if args.name else ""
-                number_val = ";".join(get_numbers(card)) if args.number else ""
-                rows.append((name_val, number_val))
-            if args.name and args.number:
-                name_width = max((len(row[0]) for row in rows), default=0)
-                lines = [
-                    f"{row[0].ljust(name_width)}  {row[1]}"
-                    for row in rows
-                ]
-            else:
-                lines = [
-                    row[0] if args.name else row[1]
-                    for row in rows
-                ]
+                rows.append({
+                    "name": get_name(card) if args.name else "",
+                    "number": ";".join(get_numbers(card)) if args.number else "",
+                    "category": ";".join(get_categories(card)) if args.show_categories else "",
+                })
+            columns = []
+            if args.name:
+                columns.append("name")
+            if args.number:
+                columns.append("number")
+            if args.show_categories:
+                columns.append("category")
+            widths = {
+                col: max((len(row[col]) for row in rows), default=0)
+                for col in columns[:-1]
+            }
+            lines = []
+            for row in rows:
+                parts = []
+                for idx, col in enumerate(columns):
+                    val = row[col]
+                    if idx < len(columns) - 1:
+                        parts.append(val.ljust(widths.get(col, 0)))
+                    else:
+                        parts.append(val)
+                lines.append("  ".join(part for part in parts if part))
             output = ("\n".join(lines) + ("\n" if lines else ""))
         else:
             output = ("\n".join(matches) + ("\n" if matches else ""))
