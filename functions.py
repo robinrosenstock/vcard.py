@@ -205,81 +205,6 @@ def categorydiff(cat_a: str, cat_b: str, files: List[str]) -> List[str]:
     return out
 
 
-from argparsing import build_parser, parse_args
-
-def main(argv=None):
-    """Main entrypoint: parse args (via build_parser) and dispatch commands."""
-    if argv is None:
-        argv = sys.argv[1:]
-
-    logging.basicConfig(format="%(levelname)s: %(message)s")
-
-    parser = build_parser()
-    args = parser.parse_args(argv)
-
-    if args.command == "categorydiff":
-        category_a = args.category_a
-        category_b = args.category_b
-        input_files = args.files
-        result_cards = categorydiff(category_a, category_b, input_files)
-        output = ("\n".join(result_cards) + ("\n" if result_cards else ""))
-        if args.out:
-            Path(args.out).write_text(output, encoding="utf-8")
-        else:
-            sys.stdout.write(output)
-
-    elif args.command == "categorycontacts":
-        matches = categorycontacts(args.category, args.files)
-        if args.name or args.number:
-            lines = []
-            for card in matches:
-                cols = []
-                if args.name:
-                    cols.append(get_name(card))
-                if args.number:
-                    nums = get_numbers(card)
-                    cols.append(";".join(nums) if nums else "")
-                lines.append("\t".join(cols))
-            output = ("\n".join(lines) + ("\n" if lines else ""))
-        else:
-            output = ("\n".join(matches) + ("\n" if matches else ""))
-        if args.out:
-            Path(args.out).write_text(output, encoding="utf-8")
-        else:
-            sys.stdout.write(output)
-
-    elif args.command == "categorycontacts_all":
-        matches = categorycontacts_all(args.category, args.files)
-        if args.name or args.number:
-            lines = []
-            for card in matches:
-                cols = []
-                if args.name:
-                    cols.append(get_name(card))
-                if args.number:
-                    nums = get_numbers(card)
-                    cols.append(";".join(nums) if nums else "")
-                lines.append("\t".join(cols))
-            output = ("\n".join(lines) + ("\n" if lines else ""))
-        else:
-            output = ("\n".join(matches) + ("\n" if matches else ""))
-        if args.out:
-            Path(args.out).write_text(output, encoding="utf-8")
-        else:
-            sys.stdout.write(output)
-
-    elif args.command == "categorycounts":
-        # Compute counts if files provided (and print them)
-        counts = categorycounts(args.files if args.files else None)
-        if not counts:
-            logging.info("No category counts available. Provide vCard files to compute counts.")
-            parser.exit(0)
-
-        # Output counts (categorycounts already printed to stderr by default)
-        if args.out:
-            with open(args.out, "w", encoding="utf-8") as fh:
-                categorycounts(output=fh)
-
 __all__ = [
     "categorycounts",
     "unfold",
@@ -293,5 +218,4 @@ __all__ = [
     "categorycontacts",
     "categorycontacts_all",
     "categorydiff",
-    "main",
 ]
