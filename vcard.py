@@ -65,6 +65,9 @@ def main(argv=None):
         else:
             output = ("\n".join(matches) + ("\n" if matches else ""))
 
+        total_line = f"Total contacts: {len(matches)}\n"
+        output = output + total_line
+
         if args.out:
             Path(args.out).write_text(output, encoding="utf-8")
         else:
