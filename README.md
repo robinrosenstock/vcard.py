@@ -57,13 +57,6 @@ python vcard.py get-contacts files/all.vcf --searchname robin --searchname "alic
 python vcard.py get-contacts files/all.vcf --has Friends --name --number --out output/friends.txt
 ```
 
-## Category diff
-
-```bash
-# stdout will contain the matching vCards unless `--out` is provided.
-python vcard.py categorydiff CategoryA CategoryB file1.vcf [file2.vcf ...] [--out out.vcf]
-```
-
 ## Category counts
 
 ```bash
