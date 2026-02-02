@@ -1,5 +1,6 @@
 # Ignore all files ending with .vcf
 *.vcf
+input/
 output/
 
 # Byte-compiled / optimized / DLL files
