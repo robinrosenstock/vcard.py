@@ -48,6 +48,9 @@ def build_parser():
     p_delete.add_argument("vcf_file", help="Input .vcf file to update")
     p_delete.add_argument("names", nargs="*", help="Contact name(s) to delete")
     p_delete.add_argument("--namefile", dest="namefile", help="Text file with one contact name per line")
+    p_delete.add_argument("--keep", dest="keep", action="append", default=[],
+                          choices=["name", "number", "photo", "category"],
+                          help="For matching names, keep only the specified fields")
     p_delete.add_argument("--out", "-o", dest="out", help="Write updated vCards to file (default overwrites input)")
 
     return parser

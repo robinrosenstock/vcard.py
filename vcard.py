@@ -104,6 +104,7 @@ def main(argv=None):
             names=args.names,
             out_file=args.out,
             names_file=args.namefile,
+            keep_fields=args.keep,
         )
         if args.out:
             logging.info("Deleted %d contacts; wrote updated vCards to %s", deleted, args.out)

@@ -74,6 +74,7 @@ Note: If no files are provided, the command will print a brief usage hint descri
 The `delete-contacts` command removes vCards whose names match entries you provide.
 
 - Provide names directly as arguments and/or via `--namefile`.
+- Use `--keep` to strip matching cards down to just the specified fields (always keeps name).
 - Names are matched case-insensitively against `FN` (or `N` if `FN` is missing).
 - By default it overwrites the input `.vcf`; use `--out` to write to a new file.
 
@@ -86,12 +87,17 @@ python vcard.py delete-contacts contacts.vcf --namefile names.txt
 
 ```bash
 # Delete a single name passed directly:
-python vcard.py delete-contacts contacts.vcf peter-wurst
+python vcard.py delete-contacts contacts.vcf Peter
 ```
 
 ```bash
 # Combine direct names and a file, write to a new file:
-python vcard.py delete-contacts contacts.vcf "Anna Schmidt" peter-wurst --namefile names.txt --out updated.vcf
+python vcard.py delete-contacts contacts.vcf "Anna Schmidt" Peter --namefile names.txt --out updated.vcf
+```
+
+```bash
+# Strip matching contacts to just name, number, and photo fields (always keeps name as well):
+python vcard.py delete-contacts contacts.vcf Peter --keep number --keep photo
 ```
 
 # Run tests

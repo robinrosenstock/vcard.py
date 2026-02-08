@@ -178,15 +178,43 @@ def categorycontacts(categories=None, files: List[str] = None, must_have=None, e
             results.append(card)
     return results
 
+def _strip_card_fields(card: str, keep_fields) -> str:
+    keep = {field.strip().lower() for field in (keep_fields or []) if field}
+    kept_lines = []
+    for line in card.splitlines():
+        stripped = line.strip()
+        upper = stripped.upper()
+        if upper == "BEGIN:VCARD" or upper == "END:VCARD":
+            kept_lines.append(line)
+            continue
+        if upper.startswith("VERSION:"):
+            kept_lines.append(line)
+            continue
+        if upper.startswith("FN:") or upper.startswith("N:"):
+            kept_lines.append(line)
+            continue
+        if "number" in keep and re.match(r"(?i)^TEL(?:;|:)", stripped):
+            kept_lines.append(line)
+            continue
+        if "photo" in keep and re.match(r"(?i)^PHOTO(?:;|:)", stripped):
+            kept_lines.append(line)
+            continue
+        if "category" in keep and re.match(r"(?i)^(?:CATEGORIES|CATEGORY):", stripped):
+            kept_lines.append(line)
+            continue
+    return "\n".join(kept_lines)
+
 def delete_vcards_by_name(
     vcf_file: str,
     names=None,
     out_file: str = None,
     names_file: str = None,
+    keep_fields=None,
 ) -> int:
     """Delete vCards whose display names match any provided names.
 
     Names can be passed directly (list/tuple/iterable) and/or loaded from names_file.
+    If keep_fields is provided, matching cards are stripped to only those fields.
     Returns the number of deleted cards.
     """
     vcf_path = Path(vcf_file)
@@ -212,7 +240,11 @@ def delete_vcards_by_name(
     for card in iter_vcards(text):
         card_name = get_name(card).strip().lower()
         if card_name and card_name in normalized:
-            deleted += 1
+            if keep_fields:
+                stripped = _strip_card_fields(card, keep_fields)
+                kept.append(stripped)
+            else:
+                deleted += 1
             continue
         kept.append(card)
 
