@@ -38,6 +38,21 @@ def main(argv=None):
             for term in raw.split(",")
             if term.strip()
         ]
+        namefile_terms = []
+        if args.namefile:
+            namefile_terms = [
+                line.strip().lower()
+                for line in Path(args.namefile).read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ]
+        if namefile_terms:
+            allowed = set(namefile_terms)
+            filtered = []
+            for card in matches:
+                contact_name = get_name(card).strip().lower()
+                if contact_name and contact_name in allowed:
+                    filtered.append(card)
+            matches = filtered
         if search_terms:
             filtered = []
             for card in matches:

@@ -19,6 +19,7 @@ The `get-contacts` command filters contacts from one or more `.vcf` files.
 - It always appends a summary line: `Total contacts: N`.
 - Use `--has` / `--not` to include/exclude by category.
 - Use `--name`, `--number`, `--category` to print selected fields instead of full vCards.
+- Use `--namefile` to match exact names from a file (one per line).
 
 ### Examples
 
@@ -50,6 +51,11 @@ python vcard.py get-contacts files/all.vcf --has Friends --name --number --categ
 ```bash
 # Filter by partial name match (repeat or comma-separate fragments):
 python vcard.py get-contacts files/all.vcf --searchname robin --searchname "alice,bob"
+```
+
+```bash
+# Filter by exact names listed in a file:
+python vcard.py get-contacts files/all.vcf --namefile names.txt --out output/selected.vcf
 ```
 
 ```bash
