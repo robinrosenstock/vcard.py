@@ -11,6 +11,7 @@ from utils import (
     get_name,
     get_numbers,
     get_categories,
+    delete_vcards_by_name,
 )
 
 def main(argv=None):
@@ -94,6 +95,20 @@ def main(argv=None):
         if args.out:
             with open(args.out, "w", encoding="utf-8") as fh:
                 count_categories(output=fh)
+
+    elif args.command == "delete-contacts":
+        if not args.names and not args.namefile:
+            parser.error("delete-contacts requires at least one name or --namefile")
+        deleted = delete_vcards_by_name(
+            args.vcf_file,
+            names=args.names,
+            out_file=args.out,
+            names_file=args.namefile,
+        )
+        if args.out:
+            logging.info("Deleted %d contacts; wrote updated vCards to %s", deleted, args.out)
+        else:
+            logging.info("Deleted %d contacts; updated %s", deleted, args.vcf_file)
 
 
 if __name__ == "__main__":

@@ -178,6 +178,51 @@ def categorycontacts(categories=None, files: List[str] = None, must_have=None, e
             results.append(card)
     return results
 
+def delete_vcards_by_name(
+    vcf_file: str,
+    names=None,
+    out_file: str = None,
+    names_file: str = None,
+) -> int:
+    """Delete vCards whose display names match any provided names.
+
+    Names can be passed directly (list/tuple/iterable) and/or loaded from names_file.
+    Returns the number of deleted cards.
+    """
+    vcf_path = Path(vcf_file)
+    if not vcf_path.exists():
+        raise FileNotFoundError(f"vCard file not found: {vcf_path}")
+
+    merged = []
+    if names:
+        merged.extend(str(item) for item in names)
+    if names_file:
+        names_path = Path(names_file)
+        if not names_path.exists():
+            raise FileNotFoundError(f"Names file not found: {names_path}")
+        merged.extend(names_path.read_text(encoding="utf-8").splitlines())
+
+    normalized = {line.strip().lower() for line in merged if str(line).strip()}
+    if not normalized:
+        return 0
+
+    text = read_file_as_utf8(vcf_path)
+    kept = []
+    deleted = 0
+    for card in iter_vcards(text):
+        card_name = get_name(card).strip().lower()
+        if card_name and card_name in normalized:
+            deleted += 1
+            continue
+        kept.append(card)
+
+    output_path = Path(out_file) if out_file else vcf_path
+    output_text = "\n".join(kept)
+    if output_text:
+        output_text += "\n"
+    output_path.write_text(output_text, encoding="utf-8")
+    return deleted
+
 
 __all__ = [
     "count_categories",
@@ -190,4 +235,5 @@ __all__ = [
     "get_name",
     "get_numbers",
     "categorycontacts",
+    "delete_vcards_by_name",
 ]

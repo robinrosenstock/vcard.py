@@ -69,6 +69,31 @@ python vcard.py count-categories file1.vcf [file2.vcf ...] --out counts.txt
 
 Note: If no files are provided, the command will print a brief usage hint describing how to supply vCard files.
 
+## Delete contacts
+
+The `delete-contacts` command removes vCards whose names match entries you provide.
+
+- Provide names directly as arguments and/or via `--namefile`.
+- Names are matched case-insensitively against `FN` (or `N` if `FN` is missing).
+- By default it overwrites the input `.vcf`; use `--out` to write to a new file.
+
+### Examples
+
+```bash
+# Delete names listed in a file:
+python vcard.py delete-contacts contacts.vcf --namefile names.txt
+```
+
+```bash
+# Delete a single name passed directly:
+python vcard.py delete-contacts contacts.vcf peter-wurst
+```
+
+```bash
+# Combine direct names and a file, write to a new file:
+python vcard.py delete-contacts contacts.vcf "Anna Schmidt" peter-wurst --namefile names.txt --out updated.vcf
+```
+
 # Run tests
 
 ```bash
