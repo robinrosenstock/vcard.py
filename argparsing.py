@@ -49,6 +49,8 @@ def build_parser():
     p_delete.add_argument("vcf_file", help="Input .vcf file to update")
     p_delete.add_argument("names", nargs="*", help="Contact name(s) to delete")
     p_delete.add_argument("--namefile", dest="namefile", help="Text file with one contact name per line")
+    p_delete.add_argument("--all", dest="all", action="store_true",
+                          help="Apply to all contacts (ignore name filters)")
     p_delete.add_argument("--keep", dest="keep", action="append", default=[],
                           choices=["name", "number", "photo", "category"],
                           help="For matching names, keep only the specified fields")

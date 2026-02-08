@@ -112,7 +112,7 @@ def main(argv=None):
                 count_categories(output=fh)
 
     elif args.command == "delete-contacts":
-        if not args.names and not args.namefile:
+        if not args.all and not args.names and not args.namefile:
             parser.error("delete-contacts requires at least one name or --namefile")
         deleted = delete_vcards_by_name(
             args.vcf_file,
@@ -120,6 +120,7 @@ def main(argv=None):
             out_file=args.out,
             names_file=args.namefile,
             keep_fields=args.keep,
+            all_cards=args.all,
         )
         if args.out:
             logging.info("Deleted %d contacts; wrote updated vCards to %s", deleted, args.out)

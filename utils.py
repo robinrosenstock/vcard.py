@@ -210,6 +210,7 @@ def delete_vcards_by_name(
     out_file: str = None,
     names_file: str = None,
     keep_fields=None,
+    all_cards: bool = False,
 ) -> int:
     """Delete vCards whose display names match any provided names.
 
@@ -231,7 +232,7 @@ def delete_vcards_by_name(
         merged.extend(names_path.read_text(encoding="utf-8").splitlines())
 
     normalized = {line.strip().lower() for line in merged if str(line).strip()}
-    if not normalized:
+    if not normalized and not all_cards:
         return 0
 
     text = read_file_as_utf8(vcf_path)
@@ -239,7 +240,8 @@ def delete_vcards_by_name(
     deleted = 0
     for card in iter_vcards(text):
         card_name = get_name(card).strip().lower()
-        if card_name and card_name in normalized:
+        match = all_cards or (card_name and card_name in normalized)
+        if match:
             if keep_fields:
                 stripped = _strip_card_fields(card, keep_fields)
                 kept.append(stripped)
